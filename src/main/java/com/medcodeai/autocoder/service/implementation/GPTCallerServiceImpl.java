@@ -14,16 +14,18 @@ public class GPTCallerServiceImpl implements GPTCallerService {
     @Override
     public String getResponseJsonForText(final String medicalNoteTxt) {
         final String prompt = Constants.PROMPT + medicalNoteTxt;
-        // logic to send prompt to open ai and get json response
-        return "{\n" +
-                "  \"diagnoses\": [\n" +
-                "    { \"condition\": \"Chronic asthma\", \"code\": \"J45.40\" },\n" +
-                "    { \"condition\": \"Syncope\", \"code\": \"R55\" }\n" +
-                "  ],\n" +
-                "  \"procedures\": [\n" +
-                "    { \"procedure\": \"Pulmonary function test\", \"code\": \"94010\" },\n" +
-                "    { \"procedure\": \"EKG\", \"code\": \"93000\" }\n" +
-                "  ]\n" +
-                "}\n";
+        // logic to send prompt to openai and get json response
+        return """
+                {
+                  "diagnoses": [
+                    { "condition": "Chronic asthma", "code": "J45.40" },
+                    { "condition": "Syncope", "code": "R55" }
+                  ],
+                  "procedures": [
+                    { "procedure": "Pulmonary function test", "code": "94010" },
+                    { "procedure": "EKG", "code": "93000" }
+                  ]
+                }
+                """;
     }
 }
