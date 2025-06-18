@@ -2,7 +2,9 @@ package com.medcodeai.autocoder.service.implementation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.medcodeai.autocoder.dto.HistoryDto;
 import com.medcodeai.autocoder.dto.Response;
+import com.medcodeai.autocoder.dto.UserContext;
 import com.medcodeai.autocoder.exception.ValidationException;
 import com.medcodeai.autocoder.service.AutocoderService;
 import com.medcodeai.autocoder.service.GPTCallerService;
@@ -22,12 +24,17 @@ public class AutocoderServiceImpl implements AutocoderService {
     private final GPTCallerService gptCallerService;
 
     @Override
-    public Response getSuggestionResponse(final MultipartFile note) throws JsonProcessingException {
+    public Response getSuggestionResponse(final MultipartFile note, final UserContext userContext) throws JsonProcessingException {
         validateNote(note);
         final String pdfText = textExtractionService.getPdfText(note);
         final String response = gptCallerService.getResponseJsonForText(pdfText);
         final ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.readValue(response, Response.class);
+    }
+
+    @Override
+    public HistoryDto getUserHistory(UserContext userContext) {
+        return null;
     }
 
     private void validateNote(final MultipartFile note) {
