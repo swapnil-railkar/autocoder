@@ -1,22 +1,18 @@
 package com.medcodeai.autocoder.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class HistoryDto {
+public class NoteResultJoinDto {
 
     private String fileName;
     private String content;
-    private Response response;
+    private String resultJson;
     private LocalDateTime processedAt;
 }

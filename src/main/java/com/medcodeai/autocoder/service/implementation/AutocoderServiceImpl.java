@@ -3,12 +3,14 @@ package com.medcodeai.autocoder.service.implementation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.medcodeai.autocoder.dto.HistoryDto;
+import com.medcodeai.autocoder.dto.NoteResultJoinDto;
 import com.medcodeai.autocoder.dto.Response;
 import com.medcodeai.autocoder.dto.UserContext;
 import com.medcodeai.autocoder.exception.ValidationException;
 import com.medcodeai.autocoder.model.MedicalNote;
 import com.medcodeai.autocoder.model.Result;
 import com.medcodeai.autocoder.model.User;
+import com.medcodeai.autocoder.repository.MedicalNoteEmRepository;
 import com.medcodeai.autocoder.repository.MedicalNoteRepository;
 import com.medcodeai.autocoder.repository.ResultRepository;
 import com.medcodeai.autocoder.repository.UserRepository;
@@ -22,7 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -34,6 +39,7 @@ public class AutocoderServiceImpl implements AutocoderService {
     private final UserRepository userRepository;
     private final MedicalNoteRepository medicalNoteRepository;
     private final ResultRepository resultRepository;
+    private final MedicalNoteEmRepository medicalNoteEmRepository;
 
     @Override
     public Response getSuggestionResponse(final MultipartFile note, final UserContext userContext) throws JsonProcessingException {
@@ -53,7 +59,7 @@ public class AutocoderServiceImpl implements AutocoderService {
         final String response = gptCallerService.getResponseJsonForText(pdfText);
         final Result result = Result.builder()
                 .medicalNote(savedNote)
-                .ResultJson(response)
+                .resultJson(response)
                 .processedAt(LocalDateTime.now())
                 .build();
         resultRepository.save(result);
@@ -62,8 +68,30 @@ public class AutocoderServiceImpl implements AutocoderService {
     }
 
     @Override
-    public HistoryDto getUserHistory(final UserContext userContext) {
-        return null;
+    public List<HistoryDto> getUserHistory(final UserContext userContext) {
+        final List<NoteResultJoinDto> noteResultJoinDtos = medicalNoteEmRepository
+                .getMedicalNotesForUser(userContext.getUsername());
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Map<String, Response> jsonObjMap = noteResultJoinDtos.stream()
+                .map(NoteResultJoinDto::getResultJson)
+                .collect(Collectors.toMap(
+                        json -> json,
+                        json -> {
+                            try {
+                                return objectMapper.readValue(json, Response.class);
+                            } catch (JsonProcessingException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                ));
+        return noteResultJoinDtos.stream()
+                .map(noteResultJoinDto -> HistoryDto.builder()
+                        .fileName(noteResultJoinDto.getFileName())
+                        .content(noteResultJoinDto.getContent())
+                        .response(jsonObjMap.get(noteResultJoinDto.getResultJson()))
+                        .processedAt(noteResultJoinDto.getProcessedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private void validateNote(final MultipartFile note) {

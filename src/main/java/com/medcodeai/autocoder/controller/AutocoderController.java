@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +30,7 @@ public class AutocoderController {
     }
 
     @GetMapping("/history")
-    public HistoryDto getHistory(@RequestBody final UserContext userContext) {
+    public List<HistoryDto> getHistory(@RequestBody final UserContext userContext) {
         return autocoderService.getUserHistory(userContext);
     }
 }

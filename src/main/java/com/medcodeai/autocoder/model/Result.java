@@ -34,7 +34,7 @@ public class Result implements Serializable {
     @JoinColumn(name = "id", nullable = false)
     private MedicalNote medicalNote;
 
-    private String ResultJson;
+    private String resultJson;
 
     private LocalDateTime processedAt;
 }
